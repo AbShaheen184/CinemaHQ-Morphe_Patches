@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.0.0...v1.1.0) (2026-11-05)
+
+### ✨ New Features
+
+* fix instruction removal logic in setBody for bytecode patches ([9568775](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/9568775d9b6eccd7af74d7558b7adc5b28c55733))
+
 ## 1.0.0 (2026-11-05)
 
 ### ✨ New Features
