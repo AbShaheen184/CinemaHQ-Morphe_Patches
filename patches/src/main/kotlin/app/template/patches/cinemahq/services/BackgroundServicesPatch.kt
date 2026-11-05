@@ -14,24 +14,31 @@ import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction35c
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 
-private val cinemaHqCompatibility = Compatibility(
-    name = "CinemaHQ",
-    packageName = "com.app.mlounge",
-    description = "CinemaHQ app",
-    apkFileType = ApkFileType.APKM,
-    targets = listOf(
-        AppTarget(
-            version = null,
-            isExperimental = true
-        ),
-        AppTarget(
-            version = "8.9"
-        ),
-        AppTarget(
-            version = "8.7"
+private val cinemaHqCompatibilities = listOf(
+    ApkFileType.APKM,
+    ApkFileType.XAPK,
+    ApkFileType.APKS,
+    ApkFileType.APK
+).map { fileType ->
+    Compatibility(
+        name = "CinemaHQ",
+        packageName = "com.app.mlounge",
+        description = "CinemaHQ app",
+        apkFileType = fileType,
+        targets = listOf(
+            AppTarget(
+                version = null,
+                isExperimental = true
+            ),
+            AppTarget(
+                version = "8.9"
+            ),
+            AppTarget(
+                version = "8.7"
+            )
         )
     )
-)
+}
 
 private fun thisRegister(method: MutableMethod): Int {
     return method.implementation!!.registerCount - 1
@@ -69,7 +76,9 @@ val neutralizeHopmnBandwidthSharingPatch = bytecodePatch(
     description = "Stops the Hopmn SDK from selling your upload bandwidth. The service stays declared so the app does not crash, but it acquires no wake lock, registers nothing and stops itself immediately.",
     default = true
 ) {
-    compatibleWith(cinemaHqCompatibility)
+    for (compat in cinemaHqCompatibilities) {
+        compatibleWith(compat)
+    }
     execute {
         mutableClassDefByOrNull("Lio/hopmonsdk/service/MoneytiserService;")?.let { serviceClass ->
             val stopMethods = listOf("onCreate", "onStartCommand", "onLowMemory", "onTaskRemoved", "onTimeout", "register", "registerWithSeedMode", "ensureForeground")
@@ -107,7 +116,9 @@ val neutralizeAppsaltRewardServicePatch = bytecodePatch(
     description = "Stops the Appsalt rewards/loyalty service from running. It stays declared, but it terminates itself on start and does no work.",
     default = true
 ) {
-    compatibleWith(cinemaHqCompatibility)
+    for (compat in cinemaHqCompatibilities) {
+        compatibleWith(compat)
+    }
     execute {
         mutableClassDefByOrNull("Lcom/appsalt/lib/longevity/RewardService;")?.let { serviceClass ->
             method(serviceClass, "onStartCommand", "Landroid/content/Intent;", "I", "I")?.let { m ->
@@ -143,7 +154,9 @@ val neutralizeBackgroundRelaunchReceiversPatch = bytecodePatch(
     description = "The app's BootReceiver, Appsalt's BootReceiver and Hopmn's NetworkStateReceiver no longer relaunch the background services on boot or on connectivity change.",
     default = true
 ) {
-    compatibleWith(cinemaHqCompatibility)
+    for (compat in cinemaHqCompatibilities) {
+        compatibleWith(compat)
+    }
     execute {
         val receivers = listOf(
             "Lcom/app/mlounge/BootReceiver;",
