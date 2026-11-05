@@ -64,9 +64,11 @@ private fun replaceVoidNoOp(mutableClass: MutableClass, name: String, vararg par
 
 private fun setBody(method: MutableMethod, instructions: List<BuilderInstruction>) {
     val impl = method.implementation ?: return
-    impl.instructions.clear()
+    for (i in impl.instructions.size - 1 downTo 0) {
+        impl.removeInstruction(i)
+    }
     for (instruction in instructions) {
-        impl.instructions.add(instruction)
+        impl.addInstruction(instruction)
     }
 }
 
