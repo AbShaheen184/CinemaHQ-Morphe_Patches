@@ -14,8 +14,12 @@ pluginManagement {
         }
         maven { url = uri("https://jitpack.io") }
     }
+    plugins {
+        kotlin("jvm") version "2.3.10"
+    }
 }
 
 plugins {
     id("app.morphe.patches") version "2.1.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
