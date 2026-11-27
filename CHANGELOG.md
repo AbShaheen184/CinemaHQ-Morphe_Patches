@@ -1,3 +1,9 @@
+## [1.2.3](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.2...v1.2.3) (2026-11-27)
+
+### 🐛 Bug Fixes
+
+* walk class hierarchy to clear try blocks ([7cc16df](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/7cc16df0c012b852e87846dc4098b40bd0cb2a4e))
+
 ## [1.2.2](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.1...v1.2.2) (2026-11-27)
 
 ### 🐛 Bug Fixes
