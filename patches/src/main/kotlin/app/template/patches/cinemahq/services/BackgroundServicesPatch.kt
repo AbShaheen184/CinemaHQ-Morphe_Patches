@@ -72,27 +72,31 @@ private fun clearTryBlocks(impl: com.android.tools.smali.dexlib2.builder.Mutable
     } catch (_: Throwable) {
     }
     // Fall back to reflection for patcher versions where getTryBlocks() is immutable
-    // or the field has a different name: clear every field that looks like a try-block
-    // list (or replace it with an empty list if it is final).
-    for (field in impl::class.java.declaredFields) {
-        val name = field.name.lowercase()
-        if (!(name.contains("try") || name.contains("catch") || name.contains("block"))) continue
-        field.isAccessible = true
-        try {
-            val value = field.get(impl)
-            if (value is MutableList<*>) {
-                value.clear()
-                continue
+    // or the field lives in a superclass: walk the whole class hierarchy and clear any
+    // field that looks like a try-block list (or replace it with an empty list).
+    var cls: Class<*>? = impl::class.java
+    while (cls != null) {
+        for (field in cls.declaredFields) {
+            val name = field.name.lowercase()
+            if (!(name.contains("try") || name.contains("catch") || name.contains("block"))) continue
+            field.isAccessible = true
+            try {
+                val value = field.get(impl)
+                if (value is MutableList<*>) {
+                    value.clear()
+                    continue
+                }
+            } catch (_: Throwable) {
             }
-        } catch (_: Throwable) {
+            try {
+                val modifiersField = java.lang.reflect.Field::class.java.getDeclaredField("modifiers")
+                modifiersField.isAccessible = true
+                modifiersField.setInt(field, field.modifiers and java.lang.reflect.Modifier.FINAL.inv())
+                field.set(impl, ArrayList<Any>())
+            } catch (_: Throwable) {
+            }
         }
-        try {
-            val modifiersField = java.lang.reflect.Field::class.java.getDeclaredField("modifiers")
-            modifiersField.isAccessible = true
-            modifiersField.setInt(field, field.modifiers and java.lang.reflect.Modifier.FINAL.inv())
-            field.set(impl, ArrayList<Any>())
-        } catch (_: Throwable) {
-        }
+        cls = cls.superclass
     }
 }
 
