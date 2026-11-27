@@ -113,7 +113,7 @@ val neutralizeHopmnBandwidthSharingPatch = bytecodePatch(
                 setBody(
                     m,
                     listOf(
-                        invokeSuper(m, "Landroid/app/Service;", "onCreate", m.parameterTypes as List<String>, "V", intArrayOf(thisReg)),
+                        invokeSuper(m, "Landroid/app/Service;", "onCreate", m.parameterTypes.map { it.toString() }, "V", intArrayOf(thisReg)),
                         BuilderInstruction10x(Opcode.RETURN_VOID)
                     )
                 )
@@ -123,7 +123,7 @@ val neutralizeHopmnBandwidthSharingPatch = bytecodePatch(
                 setBody(
                     m,
                     listOf(
-                        invokeSuper(m, "Landroid/app/Service;", "onDestroy", m.parameterTypes as List<String>, "V", intArrayOf(thisReg)),
+                        invokeSuper(m, "Landroid/app/Service;", "onDestroy", m.parameterTypes.map { it.toString() }, "V", intArrayOf(thisReg)),
                         BuilderInstruction10x(Opcode.RETURN_VOID)
                     )
                 )
@@ -133,7 +133,7 @@ val neutralizeHopmnBandwidthSharingPatch = bytecodePatch(
                 setBody(
                     m,
                     listOf(
-                        invokeSuper(m, "Landroid/app/Service;", "onLowMemory", m.parameterTypes as List<String>, "V", intArrayOf(thisReg)),
+                        invokeSuper(m, "Landroid/app/Service;", "onLowMemory", m.parameterTypes.map { it.toString() }, "V", intArrayOf(thisReg)),
                         BuilderInstruction10x(Opcode.RETURN_VOID)
                     )
                 )
@@ -145,7 +145,7 @@ val neutralizeHopmnBandwidthSharingPatch = bytecodePatch(
                 setBody(
                     m,
                     listOf(
-                        invokeSuper(m, "Landroid/app/Service;", "onTaskRemoved", m.parameterTypes as List<String>, "V", intArrayOf(thisReg, thisReg - 1)),
+                        invokeSuper(m, "Landroid/app/Service;", "onTaskRemoved", m.parameterTypes.map { it.toString() }, "V", intArrayOf(thisReg, thisReg - 1)),
                         BuilderInstruction10x(Opcode.RETURN_VOID)
                     )
                 )
@@ -266,4 +266,3 @@ val neutralizeBackgroundRelaunchReceiversPatch = bytecodePatch(
         }
     }
 }
-PY
