@@ -67,10 +67,19 @@ private fun replaceVoidNoOp(mutableClass: MutableClass, name: String, vararg par
 
 private fun setBody(method: MutableMethod, instructions: List<BuilderInstruction>) {
     val impl = method.implementation ?: return
+    // Clear stale try/catch blocks first: their handler addresses point at the original
+    // instructions that are about to be removed, which would otherwise leave an invalid
+    // dex (Morphe on-device patching then fails with "Invalid handler addr").
+    val implClass = impl::class.java
+    val tryBlocksField = implClass.getDeclaredField("tryBlocks").apply { isAccessible = true }
+    (tryBlocksField.get(impl) as? ArrayList<*>)?.clear()
+
     // Collapse to a single anchor location, append the replacement body, and leave the
     // trailing null-tail location for the dex writer to ignore. Removing the last index
     // by hand is not allowed by this dexlib2 build and would delete a real instruction.
-    while (impl.instructions.size > 1) {
+    val locationsField = implClass.getDeclaredField("instructionList").apply { isAccessible = true }
+    val locations = locationsField.get(impl) as ArrayList<*>
+    while (locations.size > 1) {
         impl.removeInstruction(0)
     }
     for (instruction in instructions) {
