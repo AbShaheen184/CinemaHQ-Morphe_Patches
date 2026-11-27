@@ -31,6 +31,9 @@ private val cinemaHqCompatibilities = listOf(
                 isExperimental = true
             ),
             AppTarget(
+                version = "9.1"
+            ),
+            AppTarget(
                 version = "8.9"
             ),
             AppTarget(
@@ -64,13 +67,34 @@ private fun replaceVoidNoOp(mutableClass: MutableClass, name: String, vararg par
 
 private fun setBody(method: MutableMethod, instructions: List<BuilderInstruction>) {
     val impl = method.implementation ?: return
-    for (i in impl.instructions.size - 1 downTo 0) {
-        impl.removeInstruction(i)
+    // Collapse to a single anchor location, append the replacement body, and leave the
+    // trailing null-tail location for the dex writer to ignore. Removing the last index
+    // by hand is not allowed by this dexlib2 build and would delete a real instruction.
+    while (impl.instructions.size > 1) {
+        impl.removeInstruction(0)
     }
     for (instruction in instructions) {
         impl.addInstruction(instruction)
     }
 }
+
+private fun invokeSuper(
+    method: MutableMethod,
+    superClass: String,
+    name: String,
+    parameters: List<String>,
+    returnType: String,
+    args: IntArray
+): BuilderInstruction35c = BuilderInstruction35c(
+    Opcode.INVOKE_SUPER,
+    args.size,
+    args.getOrElse(0) { 0 },
+    args.getOrElse(1) { 0 },
+    args.getOrElse(2) { 0 },
+    args.getOrElse(3) { 0 },
+    args.getOrElse(4) { 0 },
+    ImmutableMethodReference(superClass, name, parameters, returnType)
+)
 
 @Suppress("unused")
 val neutralizeHopmnBandwidthSharingPatch = bytecodePatch(
@@ -83,55 +107,81 @@ val neutralizeHopmnBandwidthSharingPatch = bytecodePatch(
     }
     execute {
         mutableClassDefByOrNull("Lio/hopmonsdk/service/MoneytiserService;")?.let { serviceClass ->
-            val stopMethods = listOf("onCreate", "onStartCommand", "onLowMemory", "onTaskRemoved", "onTimeout", "register", "registerWithSeedMode", "ensureForeground")
-            for (methodName in stopMethods) {
-                method(serviceClass, methodName)?.let { m ->
-                    val reg = thisRegister(m)
-                    setBody(
-                        m,
-                        listOf(
-                            BuilderInstruction35c(
-                                Opcode.INVOKE_VIRTUAL,
-                                1,
-                                reg,
-                                0, 0, 0, 0,
-                                ImmutableMethodReference(
-                                    "Landroid/app/Service;",
-                                    "stopSelf",
-                                    emptyList(),
-                                    "V"
-                                )
-                            ),
-                            BuilderInstruction11n(Opcode.CONST_4, 1, 2),
-                            BuilderInstruction11x(Opcode.RETURN, 1)
-                        )
+            // onCreate / onDestroy / onLowMemory: super only.
+            method(serviceClass, "onCreate")?.let { m ->
+                val thisReg = thisRegister(m)
+                setBody(
+                    m,
+                    listOf(
+                        invokeSuper(m, "Landroid/app/Service;", "onCreate", m.parameterTypes as List<String>, "V", intArrayOf(thisReg)),
+                        BuilderInstruction10x(Opcode.RETURN_VOID)
                     )
-                }
+                )
             }
-        }
-    }
-}
+            method(serviceClass, "onDestroy")?.let { m ->
+                val thisReg = thisRegister(m)
+                setBody(
+                    m,
+                    listOf(
+                        invokeSuper(m, "Landroid/app/Service;", "onDestroy", m.parameterTypes as List<String>, "V", intArrayOf(thisReg)),
+                        BuilderInstruction10x(Opcode.RETURN_VOID)
+                    )
+                )
+            }
+            method(serviceClass, "onLowMemory")?.let { m ->
+                val thisReg = thisRegister(m)
+                setBody(
+                    m,
+                    listOf(
+                        invokeSuper(m, "Landroid/app/Service;", "onLowMemory", m.parameterTypes as List<String>, "V", intArrayOf(thisReg)),
+                        BuilderInstruction10x(Opcode.RETURN_VOID)
+                    )
+                )
+            }
 
-@Suppress("unused")
-val neutralizeAppsaltRewardServicePatch = bytecodePatch(
-    name = "Neutralize Appsalt reward service",
-    description = "Stops the Appsalt rewards/loyalty service from running. It stays declared, but it terminates itself on start and does no work.",
-    default = true
-) {
-    for (compat in cinemaHqCompatibilities) {
-        compatibleWith(compat)
-    }
-    execute {
-        mutableClassDefByOrNull("Lcom/appsalt/lib/longevity/RewardService;")?.let { serviceClass ->
+            // onTaskRemoved: super call.
+            method(serviceClass, "onTaskRemoved", "Landroid/content/Intent;")?.let { m ->
+                val thisReg = thisRegister(m)
+                setBody(
+                    m,
+                    listOf(
+                        invokeSuper(m, "Landroid/app/Service;", "onTaskRemoved", m.parameterTypes as List<String>, "V", intArrayOf(thisReg, thisReg - 1)),
+                        BuilderInstruction10x(Opcode.RETURN_VOID)
+                    )
+                )
+            }
+
+            // Android 15+ FGS timeout callbacks.
+            replaceVoidNoOp(serviceClass, "onTimeout", "I")
+            replaceVoidNoOp(serviceClass, "onTimeout", "I", "I")
+
+            // Device registration with the seed servers.
+            replaceVoidNoOp(serviceClass, "register")
+            replaceVoidNoOp(serviceClass, "registerWithSeedMode", "Ljava/lang/String;", "I")
+
+            // onStartCommand: must call startForeground() once, then stopSelf().
             method(serviceClass, "onStartCommand", "Landroid/content/Intent;", "I", "I")?.let { m ->
-                val reg = thisRegister(m)
+                val thisReg = thisRegister(m)
                 setBody(
                     m,
                     listOf(
                         BuilderInstruction35c(
+                            Opcode.INVOKE_DIRECT,
+                            1,
+                            thisReg,
+                            0, 0, 0, 0,
+                            ImmutableMethodReference(
+                                "Lio/hopmonsdk/service/MoneytiserService;",
+                                "ensureForeground",
+                                emptyList(),
+                                "Z"
+                            )
+                        ),
+                        BuilderInstruction11x(Opcode.MOVE_RESULT, 0),
+                        BuilderInstruction35c(
                             Opcode.INVOKE_VIRTUAL,
                             1,
-                            reg,
+                            thisReg,
                             0, 0, 0, 0,
                             ImmutableMethodReference(
                                 "Landroid/app/Service;",
@@ -145,7 +195,52 @@ val neutralizeAppsaltRewardServicePatch = bytecodePatch(
                     )
                 )
             }
-            replaceVoidNoOp(serviceClass, "onDestroy")
+        }
+
+        // Close the residual Hopmn.start() entry point.
+        mutableClassDefByOrNull("Lio/hopmonsdk/Hopmn;")?.let { hopmnClass ->
+            method(hopmnClass, "start")?.let { m ->
+                setBody(
+                    m,
+                    listOf(
+                        BuilderInstruction11n(Opcode.CONST_4, 0, 0),
+                        BuilderInstruction11x(Opcode.RETURN, 0)
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Suppress("unused")
+val neutralizeEarnFmBandwidthSharingPatch = bytecodePatch(
+    name = "Neutralize EarnFM bandwidth sharing",
+    description = "Stops the EarnFM (FleetSdk) SDK from sharing the device's spare network bandwidth. The SDK stays present, but initialize() and startSdk() return false so no native harvester or foreground sharing is started.",
+    default = true
+) {
+    for (compat in cinemaHqCompatibilities) {
+        compatibleWith(compat)
+    }
+    execute {
+        mutableClassDefByOrNull("Lcom/fleet/FleetSdk;")?.let { sdkClass ->
+            method(sdkClass, "initialize")?.let { m ->
+                setBody(
+                    m,
+                    listOf(
+                        BuilderInstruction11n(Opcode.CONST_4, 0, 0),
+                        BuilderInstruction11x(Opcode.RETURN, 0)
+                    )
+                )
+            }
+            method(sdkClass, "startSdk")?.let { m ->
+                setBody(
+                    m,
+                    listOf(
+                        BuilderInstruction11n(Opcode.CONST_4, 0, 0),
+                        BuilderInstruction11x(Opcode.RETURN, 0)
+                    )
+                )
+            }
         }
     }
 }
@@ -153,7 +248,7 @@ val neutralizeAppsaltRewardServicePatch = bytecodePatch(
 @Suppress("unused")
 val neutralizeBackgroundRelaunchReceiversPatch = bytecodePatch(
     name = "Disable background service relaunch receivers",
-    description = "The app's BootReceiver, Appsalt's BootReceiver and Hopmn's NetworkStateReceiver no longer relaunch the background services on boot or on connectivity change.",
+    description = "The app's BootReceiver and Hopmn's NetworkStateReceiver no longer relaunch the background services on boot or on connectivity change.",
     default = true
 ) {
     for (compat in cinemaHqCompatibilities) {
@@ -162,7 +257,6 @@ val neutralizeBackgroundRelaunchReceiversPatch = bytecodePatch(
     execute {
         val receivers = listOf(
             "Lcom/app/mlounge/BootReceiver;",
-            "Lcom/appsalt/lib/BootReceiver;",
             "Lio/hopmonsdk/support/NetworkStateReceiver;"
         )
         for (receiver in receivers) {
@@ -172,3 +266,4 @@ val neutralizeBackgroundRelaunchReceiversPatch = bytecodePatch(
         }
     }
 }
+PY
