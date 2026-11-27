@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.1.1...v1.2.0) (2026-11-27)
+
+### ✨ New Features
+
+* rename patch bundle to Cinema HQ Patched ([c4e4e36](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/c4e4e36a8ed654a01aa979a7604360575f29350c))
+
 ## [1.1.1](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.1.0...v1.1.1) (2026-11-27)
 
 ### 🐛 Bug Fixes

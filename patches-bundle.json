@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-27T11:33:04",
-  "description": "## [1.1.1](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.1.0...v1.1.1) (2026-11-27)\n\n### 🐛 Bug Fixes\n\n* clear try/catch blocks in setBody to prevent invalid dex on Morphe ([23f670f](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/23f670f9372888cf19f3ba7f9528795851803fd9))",
-  "download_url": "https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/releases/download/v1.1.1/patches-1.1.1.mpp",
+  "created_at": "2026-11-27T11:42:42",
+  "description": "## [1.2.0](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.1.1...v1.2.0) (2026-11-27)\n\n### ✨ New Features\n\n* rename patch bundle to Cinema HQ Patched ([c4e4e36](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/c4e4e36a8ed654a01aa979a7604360575f29350c))",
+  "download_url": "https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/releases/download/v1.2.0/patches-1.2.0.mpp",
   "signature_download_url": "",
-  "version": "1.1.1"
+  "version": "1.2.0"
 }
