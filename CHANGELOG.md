@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.1.0...v1.1.1) (2026-11-27)
+
+### 🐛 Bug Fixes
+
+* clear try/catch blocks in setBody to prevent invalid dex on Morphe ([23f670f](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/23f670f9372888cf19f3ba7f9528795851803fd9))
+
 ## [1.1.0](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.0.0...v1.1.0) (2026-11-27)
 
 ### ✨ New Features
