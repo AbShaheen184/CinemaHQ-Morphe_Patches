@@ -1,3 +1,9 @@
+## [1.2.2](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.1...v1.2.2) (2026-11-27)
+
+### 🐛 Bug Fixes
+
+* robustly clear try blocks via reflection fallback ([522d36d](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/522d36d37296e3d2b289cfa8d0c6933f623cacb6))
+
 ## [1.2.1](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.0...v1.2.1) (2026-11-27)
 
 ### 🐛 Bug Fixes
