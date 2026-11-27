@@ -65,18 +65,43 @@ private fun replaceVoidNoOp(mutableClass: MutableClass, name: String, vararg par
     }
 }
 
+private fun clearTryBlocks(impl: com.android.tools.smali.dexlib2.builder.MutableMethodImplementation) {
+    // Try the public, mutable list first.
+    try {
+        (impl.getTryBlocks() as? MutableList<*>)?.clear()
+    } catch (_: Throwable) {
+    }
+    // Fall back to reflection for patcher versions where getTryBlocks() is immutable
+    // or the field has a different name: clear every field that looks like a try-block
+    // list (or replace it with an empty list if it is final).
+    for (field in impl::class.java.declaredFields) {
+        val name = field.name.lowercase()
+        if (!(name.contains("try") || name.contains("catch") || name.contains("block"))) continue
+        field.isAccessible = true
+        try {
+            val value = field.get(impl)
+            if (value is MutableList<*>) {
+                value.clear()
+                continue
+            }
+        } catch (_: Throwable) {
+        }
+        try {
+            val modifiersField = java.lang.reflect.Field::class.java.getDeclaredField("modifiers")
+            modifiersField.isAccessible = true
+            modifiersField.setInt(field, field.modifiers and java.lang.reflect.Modifier.FINAL.inv())
+            field.set(impl, ArrayList<Any>())
+        } catch (_: Throwable) {
+        }
+    }
+}
+
 private fun setBody(method: MutableMethod, instructions: List<BuilderInstruction>) {
     val impl = method.implementation ?: return
     // Clear stale try/catch blocks first: their handler addresses point at the original
     // instructions that are about to be removed, which would otherwise leave an invalid
     // dex (Morphe on-device patching then fails with "Invalid handler addr").
-    // The field name differs between patcher versions, so use the public getter and
-    // tolerate its absence instead of reflecting on a possibly-missing field.
-    try {
-        impl.getTryBlocks().clear()
-    } catch (_: Throwable) {
-        // Ignore: this patcher version may not expose mutable try blocks here.
-    }
+    clearTryBlocks(impl)
 
     // Collapse to a single anchor location, append the replacement body, and leave the
     // trailing null-tail location for the dex writer to ignore. Removing the last index
