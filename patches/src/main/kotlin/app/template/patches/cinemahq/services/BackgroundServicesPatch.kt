@@ -262,6 +262,10 @@ val neutralizeHopmnBandwidthSharingPatch = bytecodePatch(
                     )
                 )
             }
+            // Suppress the "keep CinemaHQ free" consent dialog.
+            replaceVoidNoOp(hopmnClass, "showConsent", "Landroid/app/Activity;", "Lio/hopmonsdk/Hopmn\$ConsentCallback;")
+            replaceVoidNoOp(hopmnClass, "showConsentNow", "Landroid/app/Activity;", "Lio/hopmonsdk/Hopmn\$ConsentCallback;")
+            replaceVoidNoOp(hopmnClass, "startWithConsent", "Landroid/app/Activity;", "Lio/hopmonsdk/Hopmn\$ConsentCallback;")
         }
     }
 }
