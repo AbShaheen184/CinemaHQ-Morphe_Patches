@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.4...v1.3.0) (2026-11-27)
+
+### ✨ New Features
+
+* suppress Hopmn keep-app-free consent dialog ([dd78fcf](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/dd78fcfed860b663611afa7b6169a8304880219a))
+
 ## [1.2.4](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.3...v1.2.4) (2026-11-27)
 
 ### 🐛 Bug Fixes
