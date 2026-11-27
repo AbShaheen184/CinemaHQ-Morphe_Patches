@@ -1,3 +1,13 @@
+## [1.1.0](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.0.0...v1.1.0) (2026-11-27)
+
+### ✨ New Features
+
+* update CinemaHQ patches for v9.1 (add EarnFM, remove Appsalt, fix Hopmn/startForeground, fix setBody) ([3fd13fa](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/3fd13faae826fd8f903dd535b7b19d0be48d5dc4))
+
+### 🐛 Bug Fixes
+
+* adjust invokeSuper parameter types for Morphe patcher ([122e994](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/122e9946152000828e0f34c4556c69c1e0479afd))
+
 ## 1.0.0 (2026-11-05)
 
 ### ✨ New Features
