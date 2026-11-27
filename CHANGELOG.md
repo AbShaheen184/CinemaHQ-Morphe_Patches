@@ -1,3 +1,9 @@
+## [1.2.4](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.3...v1.2.4) (2026-11-27)
+
+### 🐛 Bug Fixes
+
+* collapse on instructionList to avoid leftover anchor instruction ([f24e569](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/f24e569c8eea5867f125bb8b9e8c873a46609e3b))
+
 ## [1.2.3](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.2...v1.2.3) (2026-11-27)
 
 ### 🐛 Bug Fixes
