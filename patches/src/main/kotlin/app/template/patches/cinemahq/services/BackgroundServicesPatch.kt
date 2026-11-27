@@ -107,11 +107,25 @@ private fun setBody(method: MutableMethod, instructions: List<BuilderInstruction
     // dex (Morphe on-device patching then fails with "Invalid handler addr").
     clearTryBlocks(impl)
 
-    // Collapse to a single anchor location, append the replacement body, and leave the
-    // trailing null-tail location for the dex writer to ignore. Removing the last index
-    // by hand is not allowed by this dexlib2 build and would delete a real instruction.
-    while (impl.instructions.size > 1) {
-        impl.removeInstruction(0)
+    // Collapse to a single anchor location (the trailing null-tail), append the
+    // replacement body, and leave the trailing null-tail for the dex writer to ignore.
+    // Collapsing on impl.instructions (which excludes the null-tail) leaves a real
+    // instruction behind, so collapse on the underlying instructionList instead.
+    var locations: ArrayList<*>? = null
+    var cls: Class<*>? = impl::class.java
+    while (cls != null && locations == null) {
+        for (field in cls.declaredFields) {
+            if (field.name == "instructionList") {
+                field.isAccessible = true
+                locations = field.get(impl) as? ArrayList<*>
+            }
+        }
+        cls = cls.superclass
+    }
+    if (locations != null) {
+        while (locations.size > 1) {
+            impl.removeInstruction(0)
+        }
     }
     for (instruction in instructions) {
         impl.addInstruction(instruction)
