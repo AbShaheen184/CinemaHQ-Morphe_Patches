@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.2.0...v1.2.1) (2026-11-27)
+
+### 🐛 Bug Fixes
+
+* use getTryBlocks() instead of reflection for tryBlocks field ([c7e3f70](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/commit/c7e3f704790692e7e48b29e5638229ad9205ec6b))
+
 ## [1.2.0](https://github.com/AbShaheen184/CinemaHQ-Morphe_Patches/compare/v1.1.1...v1.2.0) (2026-11-27)
 
 ### ✨ New Features
