@@ -70,16 +70,18 @@ private fun setBody(method: MutableMethod, instructions: List<BuilderInstruction
     // Clear stale try/catch blocks first: their handler addresses point at the original
     // instructions that are about to be removed, which would otherwise leave an invalid
     // dex (Morphe on-device patching then fails with "Invalid handler addr").
-    val implClass = impl::class.java
-    val tryBlocksField = implClass.getDeclaredField("tryBlocks").apply { isAccessible = true }
-    (tryBlocksField.get(impl) as? ArrayList<*>)?.clear()
+    // The field name differs between patcher versions, so use the public getter and
+    // tolerate its absence instead of reflecting on a possibly-missing field.
+    try {
+        impl.getTryBlocks().clear()
+    } catch (_: Throwable) {
+        // Ignore: this patcher version may not expose mutable try blocks here.
+    }
 
     // Collapse to a single anchor location, append the replacement body, and leave the
     // trailing null-tail location for the dex writer to ignore. Removing the last index
     // by hand is not allowed by this dexlib2 build and would delete a real instruction.
-    val locationsField = implClass.getDeclaredField("instructionList").apply { isAccessible = true }
-    val locations = locationsField.get(impl) as ArrayList<*>
-    while (locations.size > 1) {
+    while (impl.instructions.size > 1) {
         impl.removeInstruction(0)
     }
     for (instruction in instructions) {
